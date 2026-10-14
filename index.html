@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FiapSchool Bot</title>
+</head>
+
+<body>
+    <h1>FiapSchool Bot</h1>
+    <div id="conversa">
+        <p><strong>FiapSchool Bot:</strong> Olá! Como posso ajudar nos seus estudos
+            hoje?</p>
+    </div>
+    <input type="text" id="mensagem" placeholder="Digite sua dúvida...">
+    <button onclick="enviarPergunta()">Enviar</button>
+    <script>
+        async function enviarPergunta() {
+            const campo = document.getElementById("mensagem");
+            const pergunta = campo.value;
+            if (pergunta.trim() === "") {
+                return;
+            }
+            // Exibe a mensagem do usuário na tela
+            document.getElementById("conversa").innerHTML +=
+                "<p><strong>Você:</strong> " + pergunta + "</p>";
+            // Limpa o campo de texto
+            campo.value = "";
+            try {
+                // Envia a mensagem para a rota /chat
+                const resposta = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        mensagem: pergunta
+                    })
+                });
+                const dados = await resposta.json();
+                // Exibe a resposta do assistente na tela
+                if (dados.resposta) {
+                    document.getElementById("conversa").innerHTML +=
+                        "<p><strong>FiapSchool Bot:</strong> " + dados.resposta + "</p>";
+                } else if (dados.erro) {
+                    document.getElementById("conversa").innerHTML +=
+                        "<p><strong>Erro:</strong> " + dados.erro + "</p>";
+                }
+            } catch (erro) {
+                console.error(erro);
+                document.getElementById("conversa").innerHTML +=
+                    "<p><strong>Erro:</strong> Não foi possível se conectar com o servidor.</p>";
+            }
+            campo.focus();
+        }
+    </script>
+</body>
+
+</html>
